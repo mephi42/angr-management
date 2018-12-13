@@ -537,6 +537,29 @@ class GraphLayouter(object):
             if col + 1 < len(self._col_widths) and self._col_widths[col + 1] < width // 2:
                 self._col_widths[col + 1] = width // 2
 
+        # make space for overlapping nodes within each row
+        for row, row_nodes in self._row_to_nodes.items():
+            row_nodes = sorted(
+                ((self._locations[node][0], node)
+                 for node in row_nodes),
+                key=lambda col_node: col_node[0])
+            for i in range(len(row_nodes) - 1):
+                col, node = row_nodes[i]
+                next_col, next_node = row_nodes[i + 1]
+                width, _ = self._node_sizes[node]
+                next_width, _ = self._node_sizes[next_node]
+                right = self._col_widths[col] // 2 + width // 2
+                total_width = sum(self._col_widths[col:next_col + 1])
+                next_center = total_width - self._col_widths[next_col] // 2
+                next_left = next_center - next_width // 2
+                overlap = right - next_left
+                if overlap < 0:
+                    continue
+                overlap += 40
+                for col_to_widen in range(col, next_col + 1):
+                    ratio = self._col_widths[col_to_widen] / total_width
+                    self._col_widths[col_to_widen] += overlap * ratio
+
         # the left-most and the right-most column do not have any node assigned to it
         self._col_widths[0] = 20
         self._col_widths[-1] = 20
@@ -600,11 +623,11 @@ class GraphLayouter(object):
         for node in self.graph.nodes():
             col, row = self._locations[node]
             grid_x, grid_y = self._grid_coordinates[(col, row)]
-            grid_a_width, grid_b_width = self._col_widths[col], self._col_widths[col + 1]
+            grid_width = self._col_widths[col]
             grid_height = self._row_heights[row]
             node_width, node_height = self._node_sizes[node]
 
-            self.node_coordinates[node] = (grid_x + ((grid_a_width + grid_b_width) // 2 - node_width // 2),
+            self.node_coordinates[node] = (grid_x + (grid_width // 2 - node_width // 2),
                                            grid_y + (grid_height // 2 - node_height // 2)
                                            )
 
