@@ -11,7 +11,7 @@ def check_dependencies():
         import PySide2
     except ImportError:
         sys.stderr.write("Cannot find the PySide2 package. You may install it via pip:\n" +
-                         "    pip install pyside2\n")
+                         "    pip install PySide2\n")
         return False
 
     try:
