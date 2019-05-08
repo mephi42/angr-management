@@ -555,7 +555,7 @@ class GraphLayouter(object):
                 overlap = right - next_left
                 if overlap < 0:
                     continue
-                overlap += 40
+                overlap += 60  # FIXME
                 for col_to_widen in range(col, next_col + 1):
                     ratio = self._col_widths[col_to_widen] / total_width
                     self._col_widths[col_to_widen] += overlap * ratio
